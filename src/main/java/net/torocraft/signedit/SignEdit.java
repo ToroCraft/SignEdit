@@ -15,7 +15,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 public class SignEdit {
 
   public static final String MODID = "signedit";
-  public static final String VERSION = "1.12.2-1";
+  public static final String VERSION = "1.12.2-2";
   public static final String MODNAME = "SignEdit";
 
   @EventBusSubscriber
@@ -23,15 +23,25 @@ public class SignEdit {
 
     @SubscribeEvent
     public static void editSign(RightClickBlock event) {
+      if (event.getEntityPlayer().isSneaking()) {
+        return;
+      }
+
       BlockPos pos = new BlockPos(event.getHitVec());
       IBlockState state = event.getWorld().getBlockState(pos);
+
       if (state.getBlock() != Blocks.WALL_SIGN && state.getBlock() != Blocks.STANDING_SIGN) {
         return;
       }
+
       EntityPlayer player = event.getEntityPlayer();
       TileEntity tileentity = event.getWorld().getTileEntity(pos);
+
       if (tileentity instanceof TileEntitySign) {
-        player.openEditSign((TileEntitySign) tileentity);
+        TileEntitySign sign = (TileEntitySign) tileentity;
+        sign.setPlayer(player);
+        sign.setEditable(true);
+        player.openEditSign(sign);
       }
     }
 
