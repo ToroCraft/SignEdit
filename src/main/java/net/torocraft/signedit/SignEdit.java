@@ -1,4 +1,4 @@
-package net.torocraft.nemesissystem;
+package net.torocraft.signedit;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
