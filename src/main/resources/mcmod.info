@@ -1,8 +1,8 @@
 [
 {
-  "modid": "nemesissystem",
-  "name": "NemesisSystem",
-  "description": "Shadow of Mordor's Nemesis system adapted to Minecraft.",
+  "modid": "signedit",
+  "name": "SignEdit",
+  "description": "A simple Minecraft mod that allows players to edit signs without needed to replace the sign block.",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
@@ -11,8 +11,6 @@
   "credits": "",
   "logoFile": "",
   "screenshots": [],
-  "requiredMods": ["torotraits"],
-  "dependencies": ["torotraits"],
-  "useDependencyInformation": "true"
+  "useDependencyInformation": "false"
 }
 ]
