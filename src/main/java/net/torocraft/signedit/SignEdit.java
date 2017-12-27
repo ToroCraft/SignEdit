@@ -28,8 +28,8 @@ public class SignEdit {
 	public static final String VERSION = "1.12.2-4";
 	public static final String MODNAME = "SignEdit";
 	
-	public static Item editor;
 	public static Configuration cfg;
+	public static Item editor;
 	
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent e) {
@@ -37,10 +37,17 @@ public class SignEdit {
 		
 		cfg = new Configuration(new File("config/signedit.cfg"));
 		cfg.load();
-		editor = Item.REGISTRY.getObject(new ResourceLocation(cfg.get("SignEdit", "editor", "minecraft:sign", "The player must hold this item to edit signs. Enter in the format modid:itemname. Default: 'minecraft:sign'").getString()));
+		
+		String cfgEditor = cfg.get("SignEdit", "editor", "minecraft:sign", "The player must hold this item to edit signs. Enter in the format modid:itemname. Default: 'minecraft:sign'. Use '*' to always allow editing regardless of held items.").getString();
+		
+		if (cfgEditor.equals("*")) editor = null;
+		else {
+			editor = Item.REGISTRY.getObject(new ResourceLocation(cfgEditor));
+			if (editor == null) editor = Items.SIGN;
+		}
+		
 		cfg.save();
 		
-		if (editor == null) editor = Items.SIGN;
 	}
 	
 	@SubscribeEvent
@@ -64,6 +71,7 @@ public class SignEdit {
 	}
 
 	private static boolean isHoldingEditor(EntityPlayer player) {
+		if (editor == null) return true;
 		for (ItemStack stack : player.getHeldEquipment()) if (stack.getItem() == editor) return true;
 		return false;
 	}
