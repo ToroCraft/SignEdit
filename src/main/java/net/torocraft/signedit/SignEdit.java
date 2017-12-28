@@ -26,10 +26,27 @@ public class SignEdit {
   public static final String MODID = "signedit";
   public static final String VERSION = "1.12.2-4";
   public static final String MODNAME = "SignEdit";
+  
+  private static Configuration cfg;
+  private static Item editor;
 
   @EventHandler
   public void preInit(FMLPreInitializationEvent e) {
     MinecraftForge.EVENT_BUS.register(this);
+    
+    cfg = new Configuration(new File("config/signedit.cfg"));
+    cfg.load();
+    
+    String cfgEditor = cfg.get("SignEdit", "editor", "minecraft:sign", "The player must hold this item to edit signs. Enter in the format modid:itemname. Default: 'minecraft:sign'. Use '*' to always allow editing regardless of held items.").getString();
+    
+    if (cfgEditor.equals("*")) {
+      editor = null;
+    } else {
+      editor = Item.REGISTRY.getObject(new ResourceLocation(cfgEditor));
+      if (editor == null) editor = Items.SIGN;
+    }
+    
+    cfg.save();
   }
 
   @SubscribeEvent
@@ -38,7 +55,7 @@ public class SignEdit {
       return;
     }
 
-    if (!isHoldingSign(event.getEntityPlayer())) {
+    if (!isHoldingEditor(event.getEntityPlayer())) {
       return;
     }
 
@@ -60,12 +77,15 @@ public class SignEdit {
     }
   }
 
-  private static boolean isHoldingSign(EntityPlayer player) {
-    for (ItemStack stack : player.getHeldEquipment()) {
-      if (stack.getItem() == Items.SIGN) {
-        return true;
-      }
+  private static boolean isHoldingEditor(EntityPlayer player) {
+    if (editor == null) {
+      return true;
     }
+    
+    for (ItemStack stack : player.getHeldEquipment()) if (stack.getItem() == editor) {
+      return true;
+    }
+    
     return false;
   }
 
