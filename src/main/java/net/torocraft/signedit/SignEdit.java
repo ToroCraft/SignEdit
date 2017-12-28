@@ -55,7 +55,7 @@ public class SignEdit {
       return;
     }
 
-    if (isHoldingEditor(event.getEntityPlayer())) {
+    if (!isHoldingEditor(event.getEntityPlayer())) {
       return;
     }
 
