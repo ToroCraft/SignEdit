@@ -1,14 +1,18 @@
 package net.torocraft.signedit;
 
+import java.io.File;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntitySign;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -26,27 +30,39 @@ public class SignEdit {
   public static final String MODID = "signedit";
   public static final String VERSION = "1.12.2-4";
   public static final String MODNAME = "SignEdit";
-  
-  private static Configuration cfg;
+
+  private static final Item DEFAULT_EDITOR = Items.SIGN;
+
   private static Item editor;
 
   @EventHandler
   public void preInit(FMLPreInitializationEvent e) {
     MinecraftForge.EVENT_BUS.register(this);
-    
-    cfg = new Configuration(new File("config/signedit.cfg"));
-    cfg.load();
-    
-    String cfgEditor = cfg.get("SignEdit", "editor", "minecraft:sign", "The player must hold this item to edit signs. Enter in the format modid:itemname. Default: 'minecraft:sign'. Use '*' to always allow editing regardless of held items.").getString();
-    
-    if (cfgEditor.equals("*")) {
-      editor = null;
-    } else {
-      editor = Item.REGISTRY.getObject(new ResourceLocation(cfgEditor));
-      if (editor == null) editor = Items.SIGN;
+    editor = getItemFromName(loadEditorItemNameFromConfig());
+  }
+
+  private static Item getItemFromName(String editorItemName) {
+    if (editorItemName == null) {
+      return null;
     }
-    
+    Item editor = Item.REGISTRY.getObject(new ResourceLocation(editorItemName));
+    if (editor == null) {
+      return DEFAULT_EDITOR;
+    }
+    return editor;
+  }
+
+  private static String loadEditorItemNameFromConfig() {
+    Configuration cfg = new Configuration(new File("config/signedit.cfg"));
+    cfg.load();
+
+    String editorItemName = cfg.get("SignEdit", "editor", "minecraft:sign", "The player must hold this item to edit signs. Enter in the format modid:itemname. Default: 'minecraft:sign'. Use '*' to always allow editing regardless of held items.").getString();
+    if (editorItemName.equals("*")) {
+      return null;
+    }
+
     cfg.save();
+    return editorItemName;
   }
 
   @SubscribeEvent
@@ -82,8 +98,10 @@ public class SignEdit {
       return true;
     }
     
-    for (ItemStack stack : player.getHeldEquipment()) if (stack.getItem() == editor) {
-      return true;
+    for (ItemStack stack : player.getHeldEquipment()) {
+      if (stack.getItem() == editor) {
+        return true;
+      }
     }
     
     return false;
